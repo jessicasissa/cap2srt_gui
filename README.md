@@ -1,5 +1,5 @@
 # cap2srt_gui
-Extrator de legenda do CapCut é um app para MacOS, usando como base o código do [netgian](https://github.com/netgian/capcut2srt.git)
+Extrator de legenda do CapCut é um app para MacOS, usando como base parte do código do [netgian](https://github.com/netgian/capcut2srt.git)
 
 ![Interface Extrator de Legenda](ExtratorLegenda_Preview.png)
 
