@@ -11,6 +11,6 @@ Extrator de legenda do CapCut é um app para MacOS, usando como base o código d
 5. Se der tudo certo, você encontrará o arquivo `legenda.srt` na pasta escolhida
 
 
-**→ Importante:** se algo der errado durante a execução, o app criará um arquivo chamado `app_extrair-legenda.log`, especificando o que deu errado. 
+**→ Importante:** se algo der errado durante a execução, o app criará um arquivo chamado `app_extrair-legenda.log`, especificando o problema. 
 
 Se precisar de ajuda, é só [entrar em contato](mailto:jeloytza@gmail.com). :)
