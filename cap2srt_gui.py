@@ -1,46 +1,45 @@
 import tkinter as tk
-from fileinput import filename
-from tkinter import filedialog, Frame
-from tkinter import ttk
+from tkinter import filedialog, Frame, ttk
 import tkinter.font as tkfont
+from tkmacosx import Button
+from fileinput import filename
 import os
 import json
 import re
 import logging
-from tkmacosx import Button
 
-
-# Configurar log
 logging.basicConfig(filename='app_extrair-legenda.log', level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 try:
-    # Cria a janela principal
     root = tk.Tk()
     root.title("Extrator de Legenda")
 
-    # ================
-    # Comandos
-    # ================
-
-    output_path = tk.StringVar()
-    nome_pasta = tk.StringVar()
+    pasta_saida = tk.StringVar()
+    nome_projeto = tk.StringVar()
 
 
     def list_dir():
-        path = os.path.expanduser('~') + '/Movies/CapCut/User Data/Projects/com.lveditor.draft/'
-        apanhado = os.listdir(path)
+        caminho = os.path.expanduser('~') + '/Movies/CapCut/User Data/Projects/com.lveditor.draft/'
+        lista_projetos = os.listdir(caminho)
+        lista_projetos.sort()
 
-        opcoes_projeto['values'] = [item for item in apanhado]
+        lista_removidos = []
+        for item in lista_projetos:
+            nao_proj = re.search(r'(\..*)|(.*\.json)', item)
+            if nao_proj:
+                lista_removidos.append(nao_proj.group())
+
+        opcoes_projeto['values'] = [item for item in lista_projetos if item not in lista_removidos]
 
 
     def output_file():
-        outpath = filedialog.askdirectory()
+        caminho_saida = filedialog.askdirectory()
 
         if filename:
-            label_output['text'] = outpath
+            label_output['text'] = caminho_saida
             label_output['anchor'] = "e"
-            output_path.set(outpath)
+            pasta_saida.set(caminho_saida)
 
 
     def extract(path):
@@ -48,9 +47,9 @@ try:
             return json.load(file)
 
 
-    def write(data, filename):
-        pasta_output = output_path.get()
-        arquivo = os.path.join(pasta_output, filename)
+    def write(data, nome_arq):
+        caminho = pasta_saida.get()
+        arquivo = os.path.join(caminho, nome_arq)
 
         with open(arquivo, 'w') as file:
             file.write(data)
@@ -92,26 +91,26 @@ try:
         return subtitles_info
 
 
-    def gerar_legenda():
+    def extrair_legenda():
         draft = os.path.expanduser(
-            '~') + '/Movies/CapCut/User Data/Projects/com.lveditor.draft/' + nome_pasta.get() + '/draft_info.json'
+            '~') + '/Movies/CapCut/User Data/Projects/com.lveditor.draft/' + nome_projeto.get() + '/draft_info.json'
         subtitles = scrap_subs(extract(draft))
 
         output = ''.join([f'{s["index"]}\n{s["timestamp"]}\n{s["content"]}\n\n' for s in subtitles])
         write(output, 'legenda.srt')
 
-        btn_gerar['text'] = "Legenda Extraída!"
+        btn_extrair['text'] = "Legenda Extraída!"
+        btn_extrair['anchor'] = "e"
 
 
-    # ================
-    # Estilo interface
-    # ================
-
+    # Estilo
     corpo_fonte = tkfont.Font(font="Calibri", size=10)
+    bg_botoes = '#2563eb'
 
     main_frame = Frame(root, padx=10, pady=10)
     main_frame.pack()
 
+    # Escolher Projeto
     top_frame = Frame(main_frame)
     top_frame.pack(fill="both")
 
@@ -122,12 +121,13 @@ try:
     inner_projeto = tk.Frame(projeto_wrapper)
     inner_projeto.pack(fill="both", padx=10, pady=10)
 
-    opcoes_projeto = ttk.Combobox(inner_projeto, textvariable=nome_pasta, font=corpo_fonte, state="readonly")
+    opcoes_projeto = ttk.Combobox(inner_projeto, textvariable=nome_projeto, font=corpo_fonte, state="readonly")
     opcoes_projeto.pack(fill="both", ipady=3, ipadx=3)
 
     list_dir()
-    opcoes_projeto.bind('<<ComboboxSelected>>', nome_pasta.get())
+    opcoes_projeto.bind('<<ComboboxSelected>>', nome_projeto.get())
 
+    # Pasta de saída
     mid_frame = Frame(main_frame)
     mid_frame.pack(fill="both")
 
@@ -141,16 +141,17 @@ try:
                             font='Calibri 12 italic')
     label_output.pack(side="left")
 
-    btn_output = Button(inner_output, text="Procurar", font=corpo_fonte, pady=4, relief='solid', bg="#3b82f6",
-                           fg="black", command=output_file)
+    btn_output = Button(inner_output, text="Procurar", font=corpo_fonte, pady=4, relief='solid', bg=bg_botoes,
+                           fg="white", command=output_file)
     btn_output.pack(side="top")
 
+    # Área do Botão
     bottom_frame = Frame(main_frame, padx=10, pady=10)
     bottom_frame.pack(fill="both")
 
-    btn_gerar = Button(bottom_frame, text="Extrair Legenda", font='Calibri 13 bold', pady=6, relief='solid',
-                          bg="#3b82f6", fg="black", command=gerar_legenda)
-    btn_gerar.pack(fill="both")
+    btn_extrair = Button(bottom_frame, text="Extrair Legenda", font='Calibri 13 bold', anchor="center",
+                         pady=6, padx=32, relief='solid', bg=bg_botoes, fg="white", command=extrair_legenda)
+    btn_extrair.pack(fill="both")
 
     # Loop tkinter
     root.mainloop()
